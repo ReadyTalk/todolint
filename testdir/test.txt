@@ -1,0 +1,9 @@
+// TODO: A todo
+// TODO (Author Name): A todo with author
+// NOTE: A note
+// FIXME: A fixme
+// XXX: A Mark
+// HACK: A hack
+/* BUG: A bug */
+// OPTIMIZE: An optimization
+// SKIPPED: Should be skipped
