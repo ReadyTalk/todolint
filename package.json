@@ -1,7 +1,7 @@
 {
   "name": "todolint",
   "version": "0.0.1",
-  "description": "",
+  "description": "Let's you check for TODOs FIXMEs and other tags.",
   "main": "todolint.js",
   "bin": {
     "todolint": "./cli.js"
