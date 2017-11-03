@@ -3,7 +3,8 @@
     "warn": {
         "limit": 4,
         "tags": [ "TODO", "FIXME", "HACK", "BUG", "XXX" ],
-        "message": ""
+        "message": "",
+        "fail": true
     },
     "tags": [
         {
@@ -50,8 +51,8 @@
         }
     ],
     "ignore": [
-        ".git/**",
-        "node_modules/**",
+        ".git",
+        "node_modules",
         "*.swp"
     ]
 }

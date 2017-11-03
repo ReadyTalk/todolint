@@ -7,15 +7,16 @@ let readline = require('readline');
 let minimatch = require('minimatch');
 let chalk = require('chalk');
 
-let config = require('./.todolintrc.json');
+let config = require(path.join(process.cwd(), '.todolintrc.json'));
 
 let root = config.root || ".";
 let tags = config.tags || [];
 let warnLimit = config.warn.limit || null;
 let warnTags = config.warn.tags || tags.map(function (tag) { return tag.name; });
 let warnMessage = config.warn.message ||
-  '⚠ ⚠ WARNING! There are ' + warnLimit +
-  ' or more items that need addressing ⚠ ⚠';
+  '⚠ ⚠  WARNING!! There are more than ' + warnLimit +
+  ' items that need addressing!! ⚠ ⚠';
+let warnFail = config.warn.fail || false;
 let ignorePatterns = config.ignore || [];
 ignorePatterns = ignorePatterns.concat('.todolintrc.json');
 
@@ -35,6 +36,7 @@ readDirectoryRecursive(root, function (error, results) {
       crlfDelay: Infinity
     });
     let lineNumber = 0;
+    let lineNumberLength = 0;
 
     reader.on('line', function (line) {
       lineNumber += 1;
@@ -83,6 +85,8 @@ readDirectoryRecursive(root, function (error, results) {
               ':' + finalMessage + ' ')
           });
 
+          lineNumberLength = ('' + lineNumber).length;
+
           if (warnTags.indexOf(tag.name) !== -1) {
             totalWarnMessages += 1;
           }
@@ -94,16 +98,18 @@ readDirectoryRecursive(root, function (error, results) {
       if (messages.length > 0) {
         console.log(chalk.white(file.relativePath));
         messages.forEach(function (msg) {
-          let lineString = '[Line ' + padLine(msg.line, lineNumber) + '] ';
+          let lineString = '[Line ' + padLine(msg.line, lineNumberLength) + '] ';
           console.log(chalk.white(lineString) + msg.message);
         });
       }
 
       itemsToProcess -= 1;
       if (itemsToProcess == 0) {
-        if (warnLimit && totalWarnMessages >= warnLimit) {
+        if (warnLimit && totalWarnMessages > warnLimit) {
           console.log('\n' + chalk.red(warnMessage));
-          process.exit(1);
+          if (warnFail) {
+            process.exit(1);
+          }
         }
         process.exit(0);
       }
@@ -144,14 +150,25 @@ function readDirectoryRecursive(root, done, filter) {
 
       fs.stat(item, function (error, stat) {
         if (stat && stat.isDirectory()) {
-          // Item is a directory. Do recursive call.
-          readDirectoryRecursive(item, function (error, recursiveResults) {
-            results = results.concat(recursiveResults);
-            numItems -= 1;
-            if (numItems === 0) {
-              done(null, results);
-            }
-          }, filter);
+          // Item is a directory. Do recursive call if not filtered by filter.
+          if (filter(itemPath)) {
+            readDirectoryRecursive(item, function (error, recursiveResults) {
+              if (error) {
+                return done(error, results);
+              }
+
+              results = results.concat(recursiveResults);
+              numItems -= 1;
+              if (numItems === 0) {
+                return done(null, results);
+              }
+            }, filter);
+          } else {
+              numItems -= 1;
+              if (numItems === 0) {
+                return done(null, results);
+              }
+          }
 
         } else {
           // Item is a file. Add it to the list if not filtered by filter.
@@ -163,7 +180,7 @@ function readDirectoryRecursive(root, done, filter) {
           }
           numItems -= 1;
           if (numItems === 0) {
-            done(null, results);
+            return done(null, results);
           }
         }
       });
@@ -171,9 +188,9 @@ function readDirectoryRecursive(root, done, filter) {
   });
 }
 
-function padLine(line, totalLines) {
+function padLine(line, lineNumberLength) {
   let lineString = '' + line;
-  while (lineString.length < ('' + totalLines).length) {
+  while (lineString.length < lineNumberLength) {
     lineString = ' ' + lineString;
   }
   return lineString;

@@ -1,8 +1,17 @@
 // TODO: A todo
+Some test lines to get line count over 10.
+Some test lines to get line count over 10. // TODO: End of line
+Some test lines to get line count over 10.
 // TODO (Author Name): A todo with author
 // NOTE: A note
+Some test lines to get line count over 10.
+Some test lines to get line count over 10.
+Some test lines to get line count over 10.
 // FIXME: A fixme
 // XXX: A Mark
+Some test lines to get line count over 10.
+Some test lines to get line count over 10.
+Some test lines to get line count over 10.
 // HACK: A hack
 /* BUG: A bug */
 // OPTIMIZE: An optimization
