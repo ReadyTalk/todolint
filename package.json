@@ -2,9 +2,9 @@
   "name": "todolint",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "todolint.js",
   "bin": {
-    "todolint": "./index.js"
+    "todolint": "./cli.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
