@@ -105,7 +105,7 @@ function todolint(onComplete) {
 
       fileStream.on('end', function () {
         if (messages.length > 0) {
-          console.log(chalk.white(file.relativePath));
+          console.log(file.relativePath);
           messages.forEach(function (msg) {
             let lineString = '[Line ' + padLine(msg.line, lineNumberLength) + '] ';
             console.log(chalk.white(lineString) + msg.message);
