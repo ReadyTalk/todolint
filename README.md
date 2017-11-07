@@ -21,7 +21,7 @@ todolint reads configuration from a file in the same directory `todolint` is run
     * **name:** The name of the tag.
     * **regex:** The regular expression used to identify the tag. Matches of the regular expression in a file are replaced from the beginning of the line to the end of the match with the label for this tag.
     * **label:** The label shown in the command's output for a given tag.
-    * **style:** An array of [chalk](https://www.npmjs.com/package/chalk) styles to be applied to the tag and message. (e.g. ["red", "bgBlue", "underline", "bold"])
+    * **style:** An array of [chalk](https://www.npmjs.com/package/chalk) styles to be applied to the tag and message. (e.g. `["red", "bgBlue", "underline", "bold"]`)
     Defaults to an empty array.
 * **warn:** An object defining the warning behavior for the command with the following options:
     * **limit:** The number of messages to allow before showing a warning. Defaults to no limit.
