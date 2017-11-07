@@ -1,16 +1,19 @@
 {
   "name": "todolint",
   "version": "0.0.1",
-  "description": "Let's you check for TODOs FIXMEs and other tags.",
+  "description": "Let's you check projects for TODOs FIXMEs and other tags.",
   "main": "todolint.js",
   "bin": {
     "todolint": "./cli.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "John Langewisch",
   "license": "MIT",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/jahndis/todolint.git"
+  },
   "dependencies": {
     "chalk": "^2.3.0",
     "minimatch": "^3.0.4"
