@@ -32,7 +32,7 @@ todolint
 ### Usage with gulp:
 While `todolint` does not support gulp directly with streams, it does offer a callback option. To use with gulp, you can do the following:
 
-```
+```javascript
 var todolint = require('todolint');
 gulp.task('todolint', function (done) {
     todolint(done);
@@ -40,9 +40,9 @@ gulp.task('todolint', function (done) {
 ```
 
 ### Example .todolintrc.json:
-```
+```json
 {
-    "root": "test",
+    "root": "src",
     "warn": {
         "limit": 4,
         "tags": [ "TODO", "FIXME", "HACK", "BUG", "XXX" ],

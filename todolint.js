@@ -118,10 +118,12 @@ function todolint(onComplete) {
             console.log('\n' + chalk.red(warnMessage));
             if (warnFail) {
               onComplete(warnMessage);
+              return;
             }
           }
 
           onComplete();
+          return;
         }
       });
 
