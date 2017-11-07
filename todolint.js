@@ -17,9 +17,9 @@ let root = config.root || ".";
 let tags = config.tags || [];
 let warnLimit = config.warn.limit || null;
 let warnTags = config.warn.tags || tags.map(function (tag) { return tag.name; });
-let warnMessage = config.warn.message ||
-  '⚠ ⚠  WARNING!! There are more than ' + warnLimit +
+let defaultWarning = '⚠ ⚠  WARNING!! There are more than ' + warnLimit +
   ' items that need addressing!! ⚠ ⚠';
+let warnMessage = config.warn.message || warnLimit ? defaultWarning : '';
 let warnFail = config.warn.fail || false;
 let ignorePatterns = config.ignore || [];
 ignorePatterns = ignorePatterns.concat('.todolintrc.json');
