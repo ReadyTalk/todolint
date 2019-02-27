@@ -1,6 +1,6 @@
 {
   "name": "todolint",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Let's you check projects for TODOs FIXMEs and other tags.",
   "main": "todolint.js",
   "bin": {
