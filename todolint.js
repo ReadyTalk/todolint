@@ -1,26 +1,24 @@
 'use strict';
 
-let fs = require('fs');
-let path = require('path');
-let readline = require('readline');
-let { Writable } = require('stream');
-let minimatch = require('minimatch');
-let chalk = require('chalk');
+const fs = require('fs');
+const path = require('path');
+const readline = require('readline');
+const minimatch = require('minimatch');
+const chalk = require('chalk');
 
 let config = { warn: {} };
-let configFile = path.join(process.cwd(), '.todolintrc.json');
+const configFile = path.join(process.cwd(), '.todolintrc.json');
 if (fs.existsSync(configFile)) {
   config = require(configFile);
 }
 
-let root = config.root || ".";
-let tags = config.tags || [];
-let warnLimit = config.warn.limit || null;
-let warnTags = config.warn.tags || tags.map(function (tag) { return tag.name; });
-let defaultWarning = '⚠ ⚠  WARNING!! There are more than ' + warnLimit +
-  ' items that need addressing!! ⚠ ⚠';
-let warnMessage = config.warn.message || warnLimit ? defaultWarning : '';
-let warnFail = config.warn.fail || false;
+let root = config.root || ['.'];
+const tags = config.tags || [];
+const warnFail = config.warn.fail || false;
+const warnLimit = config.warn.limit || (warnFail ? 0 : null);
+const warnTags = config.warn.tags || tags.map(tag => tag.name);
+const defaultWarning = `⚠ ⚠  WARNING!! There are ${warnLimit ? `more than ${warnLimit} ` : ''}items that need addressing!! ⚠ ⚠`;
+const warnMessage = config.warn.message || (warnLimit !== null ? defaultWarning : '');
 let ignorePatterns = config.ignore || [];
 ignorePatterns = ignorePatterns.concat('.todolintrc.json');
 
@@ -29,112 +27,123 @@ function todolint(onComplete) {
     onComplete = function () {};
   }
 
-  readDirectoryRecursive(root, function (error, results) {
-    if (error) {
-      console.error(chalk.red(error));
-    }
+  if (typeof root === 'string') {
+    root = [root];
+  }
+  if (!Array.isArray(root)) {
+    console.error(chalk.red(`"${root}" is not valid. Must be a string or array of strings.`));
+    onComplete('Invalid root');
+  }
 
-    let itemsToProcess = results.length;
-    let totalWarnMessages = 0;
+  let rootsToProcess = root.length;
+  root.forEach(dir => {
+    readDirectoryRecursive(dir, (error, results) => {
+      if (error) {
+        console.error(chalk.red(error));
+      }
 
-    results.forEach(function (file) {
-      let messages = [];
-      let fileStream = fs.createReadStream(file.path);
-      let reader = readline.createInterface({
-        input: fileStream,
-        crlfDelay: Infinity
-      });
-      let lineNumber = 0;
-      let lineNumberLength = 0;
+      let itemsToProcess = results.length;
+      let totalWarnMessages = 0;
 
-      reader.on('line', function (line) {
-        lineNumber += 1;
+      results.forEach(file => {
+        const messages = [];
+        const fileStream = fs.createReadStream(file.path);
+        const reader = readline.createInterface({
+          input: fileStream,
+          crlfDelay: Infinity
+        });
+        let lineNumber = 0;
+        let lineNumberLength = 0;
 
-        tags.forEach(function (tag) {
-          let match = line.match(tag.regex);
+        reader.on('line', line => {
+          lineNumber += 1;
 
-          if (match) {
-            // Remove beginning of string up to just after the tag match
-            let finalMessage = line.slice(match.index + match[0].length);
-            let description = '';
+          tags.forEach(tag => {
+            let match = line.match(tag.regex);
 
-            // Capture anything in '()' before the first ':'
-            match = finalMessage.match(/^.*\((.*)\).*:/);
             if (match) {
-              description = match[1];
-              finalMessage = finalMessage.slice(match.index + match[0].length);
-            }
+              // Remove beginning of string up to just after the tag match
+              let finalMessage = line.slice(match.index + match[0].length);
+              let description = '';
 
-            // Remove any preceding ':'
-            match = finalMessage.match(/^.*:/);
-            if (match) {
-              finalMessage = finalMessage.slice(match.index + match[0].length);
-            }
+              // Capture anything in '()' before the first ':'
+              match = finalMessage.match(/^.*\((.*)\).*:/);
+              if (match) {
+                description = match[1];
+                finalMessage = finalMessage.slice(match.index + match[0].length);
+              }
 
-            // Remove trailing '*/' comment terminator
-            match = finalMessage.match(/\s*\*\/.*$/);
-            if (match) {
-              finalMessage = finalMessage.slice(0, match.index);
-            }
+              // Remove any preceding ':'
+              match = finalMessage.match(/^.*:/);
+              if (match) {
+                finalMessage = finalMessage.slice(match.index + match[0].length);
+              }
 
-            let chalkStyle = chalk;
-            for (let i = 0; i < tag.style.length; i++) {
-              chalkStyle = chalkStyle[tag.style[i]];
-              if (typeof chalkStyle === 'undefined') {
-                console.error(chalk.red('Style "' + tag.style[i] +
-                  '" is not valid. Tag "' + tag.name + '" skipped.'));
-                return;
+              // Remove trailing '*/' comment terminator
+              match = finalMessage.match(/\s*\*\/.*$/);
+              if (match) {
+                finalMessage = finalMessage.slice(0, match.index);
+              }
+
+              let chalkStyle = chalk;
+              for (let i = 0; i < tag.style.length; i++) {
+                chalkStyle = chalkStyle[tag.style[i]];
+                if (typeof chalkStyle === 'undefined') {
+                  console.error(chalk.red(`Style "${tag.style[i]}" is not valid. Tag "${tag.name}" skipped.`));
+                  return;
+                }
+              }
+
+              messages.push({
+                line: lineNumber,
+                message: chalkStyle(` ${tag.label}${(description.length > 0 ? ` (${description})` : '')}:${finalMessage} `)
+              });
+
+              lineNumberLength = (lineNumber.toString()).length;
+
+              if (warnTags.indexOf(tag.name) !== -1) {
+                totalWarnMessages += 1;
               }
             }
-
-            messages.push({
-              line: lineNumber,
-              message: chalkStyle(' ' + tag.label +
-                (description.length > 0 ? ' (' + description + ')' : '') +
-                ':' + finalMessage + ' ')
-            });
-
-            lineNumberLength = ('' + lineNumber).length;
-
-            if (warnTags.indexOf(tag.name) !== -1) {
-              totalWarnMessages += 1;
-            }
-          }
-        });
-      });
-
-      fileStream.on('end', function () {
-        if (messages.length > 0) {
-          console.log(file.relativePath);
-          messages.forEach(function (msg) {
-            let lineString = '[Line ' + padLine(msg.line, lineNumberLength) + '] ';
-            console.log(chalk.white(lineString) + msg.message);
           });
-        }
+        });
 
-        itemsToProcess -= 1;
-        if (itemsToProcess == 0) {
-          if (warnLimit && totalWarnMessages > warnLimit) {
-            console.log('\n' + chalk.red(warnMessage));
-            if (warnFail) {
-              onComplete(warnMessage);
+        fileStream.on('end', () => {
+          if (messages.length > 0) {
+            console.log(file.relativePath);
+            messages.forEach(msg => {
+              const lineString = `[Line ${padLine(msg.line, lineNumberLength)}] `;
+              console.log(chalk.white(lineString) + msg.message);
+            });
+          }
+
+          itemsToProcess -= 1;
+          if (itemsToProcess === 0) {
+            rootsToProcess -= 1;
+            if (rootsToProcess === 0) {
+              if (warnLimit !== null && totalWarnMessages > warnLimit) {
+                console.log(`\n${chalk.red(warnMessage)}`);
+                if (warnFail) {
+                  onComplete(warnMessage);
+                  return;
+                }
+              }
+
+              onComplete();
               return;
             }
           }
+        });
 
-          onComplete();
-          return;
-        }
       });
 
-    });
-
-  }, itemFilter);
+    }, itemFilter);
+  });
 }
 
 function itemFilter(item) {
   let allowed = true;
-  ignorePatterns.forEach(function (pattern) {
+  ignorePatterns.forEach(pattern => {
     if (minimatch(item, pattern, { dot: true })) {
       allowed = false;
     }
@@ -142,10 +151,10 @@ function itemFilter(item) {
   return allowed;
 }
 
-function readDirectoryRecursive(root, done, filter) {
+function readDirectoryRecursive(dir, done, filter) {
   let results = [];
 
-  fs.readdir(root, function (error, list) {
+  fs.readdir(dir, (error, list) => {
     if (error) {
       return done(error, results);
     }
@@ -157,15 +166,15 @@ function readDirectoryRecursive(root, done, filter) {
       return done(null, results);
     }
 
-    list.forEach(function (item) {
-      item = path.resolve(root, item);
-      let itemPath = path.relative(path.basename("."), item);
+    list.forEach(item => {
+      item = path.resolve(dir, item);
+      const itemPath = path.relative(path.basename('.'), item);
 
-      fs.stat(item, function (error, stat) {
+      fs.stat(item, (error, stat) => {
         if (stat && stat.isDirectory()) {
           // Item is a directory. Do recursive call if not filtered by filter.
           if (filter(itemPath)) {
-            readDirectoryRecursive(item, function (error, recursiveResults) {
+            readDirectoryRecursive(item, (error, recursiveResults) => {
               if (error) {
                 return done(error, results);
               }
@@ -177,10 +186,10 @@ function readDirectoryRecursive(root, done, filter) {
               }
             }, filter);
           } else {
-              numItems -= 1;
-              if (numItems === 0) {
-                return done(null, results);
-              }
+            numItems -= 1;
+            if (numItems === 0) {
+              return done(null, results);
+            }
           }
 
         } else {
@@ -202,9 +211,9 @@ function readDirectoryRecursive(root, done, filter) {
 }
 
 function padLine(line, lineNumberLength) {
-  let lineString = '' + line;
+  let lineString = line.toString();
   while (lineString.length < lineNumberLength) {
-    lineString = ' ' + lineString;
+    lineString = ` ${lineString}`;
   }
   return lineString;
 }

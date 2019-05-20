@@ -1,12 +1,14 @@
 {
   "name": "todolint",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Let's you check projects for TODOs FIXMEs and other tags.",
   "main": "todolint.js",
   "bin": {
     "todolint": "./cli.js"
   },
-  "scripts": {},
+  "scripts": {
+    "lint": "eslint *.js"
+  },
   "author": "John Langewisch",
   "license": "MIT",
   "repository": {
@@ -16,5 +18,8 @@
   "dependencies": {
     "chalk": "^2.3.0",
     "minimatch": "^3.0.4"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0"
   }
 }

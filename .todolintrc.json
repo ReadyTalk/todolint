@@ -1,58 +1,59 @@
 {
-    "root": "test",
-    "warn": {
-        "limit": 4,
-        "tags": [ "TODO", "FIXME", "HACK", "BUG", "XXX" ],
-        "message": "",
-        "fail": true
+  "root": ["test/root1", "test/root2"],
+  "warn": {
+    "limit": 4,
+    "tags": [ "TODO", "FIXME", "HACK", "BUG", "XXX" ],
+    "message": "",
+    "fail": true
+  },
+  "tags": [
+    {
+      "name": "TODO",
+      "regex": "TODO",
+      "label": "✓ TODO",
+      "style": ["cyan"]
     },
-    "tags": [
-        {
-            "name": "TODO",
-            "regex": "TODO",
-            "label": "✓ TODO",
-            "style": ["cyan"]
-        },
-        {
-            "name": "NOTE",
-            "regex": "NOTE",
-            "label": "✐ NOTE",
-            "style": ["green"]
-        },
-        {
-            "name": "FIXME",
-            "regex": "FIXME",
-            "label": "⚠ FIXME",
-            "style": ["red"]
-        },
-        {
-            "name": "BUG",
-            "regex": "BUG",
-            "label": "☠ BUG",
-            "style": ["white", "bgRed", "underline"]
-        },
-        {
-            "name": "HACK",
-            "regex": "HACK",
-            "label": "✄ HACK",
-            "style": ["yellow"]
-        },
-        {
-            "name": "XXX",
-            "regex": "XXX",
-            "label": "✗ XXX",
-            "style": ["black", "bgYellow"]
-        },
-        {
-            "name": "OPTIMIZE",
-            "regex": "OPTIMIZE",
-            "label": "↻ OPTIMIZE",
-            "style": ["blue"]
-        }
-    ],
-    "ignore": [
-        ".git",
-        "node_modules",
-        "*.swp"
+    {
+      "name": "NOTE",
+      "regex": "NOTE",
+      "label": "✐ NOTE",
+      "style": ["green"]
+    },
+    {
+      "name": "FIXME",
+      "regex": "FIXME",
+      "label": "⚠ FIXME",
+      "style": ["red"]
+    },
+    {
+      "name": "BUG",
+      "regex": "BUG",
+      "label": "☠ BUG",
+      "style": ["white", "bgRed", "underline"]
+    },
+    {
+      "name": "HACK",
+      "regex": "HACK",
+      "label": "✄ HACK",
+      "style": ["yellow"]
+    },
+    {
+      "name": "XXX",
+      "regex": "XXX",
+      "label": "✗ XXX",
+      "style": ["black", "bgYellow"]
+    },
+    {
+      "name": "OPTIMIZE",
+      "regex": "OPTIMIZE",
+      "label": "↻ OPTIMIZE",
+      "style": ["blue"]
+    }
+  ],
+  "ignore": [
+    ".git",
+    "node_modules",
+    "*.swp",
+    "**/ignore.txt"
     ]
 }
