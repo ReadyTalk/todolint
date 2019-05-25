@@ -15,7 +15,7 @@ if (fs.existsSync(configFile)) {
 let root = config.root || ['.'];
 const tags = config.tags || [];
 const warnFail = config.warn.fail || false;
-const warnLimit = config.warn.limit || (warnFail ? 0 : null);
+const warnLimit = config.warn.limit === undefined ? (warnFail ? 0 : null) : config.warn.limit;
 const warnTags = config.warn.tags || tags.map(tag => tag.name);
 const defaultWarning = `⚠ ⚠  WARNING!! There are ${warnLimit ? `more than ${warnLimit} ` : ''}items that need addressing!! ⚠ ⚠`;
 const warnMessage = config.warn.message || (warnLimit !== null ? defaultWarning : '');
@@ -36,14 +36,17 @@ function todolint(onComplete) {
   }
 
   let rootsToProcess = root.length;
+  let itemsToProcess = 0;
+  let totalWarnMessages = 0;
+
   root.forEach(dir => {
     readDirectoryRecursive(dir, (error, results) => {
       if (error) {
         console.error(chalk.red(error));
       }
 
-      let itemsToProcess = results.length;
-      let totalWarnMessages = 0;
+      rootsToProcess -= 1;
+      itemsToProcess += results.length;
 
       results.forEach(file => {
         const messages = [];
@@ -96,7 +99,7 @@ function todolint(onComplete) {
 
               messages.push({
                 line: lineNumber,
-                message: chalkStyle(` ${tag.label}${(description.length > 0 ? ` (${description})` : '')}:${finalMessage} `)
+                message: chalkStyle(` ${tag.label}${(description.length > 0 ? ` (${description})` : '')}: ${finalMessage.trim()} `)
               });
 
               lineNumberLength = (lineNumber.toString()).length;
@@ -119,7 +122,6 @@ function todolint(onComplete) {
 
           itemsToProcess -= 1;
           if (itemsToProcess === 0) {
-            rootsToProcess -= 1;
             if (rootsToProcess === 0) {
               if (warnLimit !== null && totalWarnMessages > warnLimit) {
                 console.log(`\n${chalk.red(warnMessage)}`);

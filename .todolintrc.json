@@ -53,7 +53,8 @@
   "ignore": [
     ".git",
     "node_modules",
-    "*.swp",
+    "**/*.swp",
+    "**/ignore",
     "**/ignore.txt"
-    ]
+  ]
 }
