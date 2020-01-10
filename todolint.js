@@ -56,7 +56,6 @@ function todolint(onComplete) {
           crlfDelay: Infinity
         });
         let lineNumber = 0;
-        let lineNumberLength = 0;
 
         reader.on('line', line => {
           lineNumber += 1;
@@ -102,8 +101,6 @@ function todolint(onComplete) {
                 message: chalkStyle(` ${tag.label}${(description.length > 0 ? ` (${description})` : '')}: ${finalMessage.trim()} `)
               });
 
-              lineNumberLength = (lineNumber.toString()).length;
-
               if (warnTags.indexOf(tag.name) !== -1) {
                 totalWarnMessages += 1;
               }
@@ -113,9 +110,8 @@ function todolint(onComplete) {
 
         fileStream.on('end', () => {
           if (messages.length > 0) {
-            console.log(file.relativePath);
             messages.forEach(msg => {
-              const lineString = `[Line ${padLine(msg.line, lineNumberLength)}] `;
+              const lineString = `${file.relativePath}:${msg.line} `;
               console.log(chalk.white(lineString) + msg.message);
             });
           }
@@ -210,14 +206,6 @@ function readDirectoryRecursive(dir, done, filter) {
       });
     });
   });
-}
-
-function padLine(line, lineNumberLength) {
-  let lineString = line.toString();
-  while (lineString.length < lineNumberLength) {
-    lineString = ` ${lineString}`;
-  }
-  return lineString;
 }
 
 module.exports = todolint;
